@@ -1,0 +1,13 @@
+# Runtime backups created during installation
+backups/*
+!backups/.gitkeep
+
+# Ignore extracted uncompressed binary (bin/pufferpanel.gz is tracked and auto-decompressed by install.sh)
+bin/pufferpanel
+
+# Temporary and OS files
+*.tmp
+*.log
+.DS_Store
+*~
+*.swp

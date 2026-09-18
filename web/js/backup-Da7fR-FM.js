@@ -1,0 +1,3 @@
+const t="バックアップ",m="名前",e="バックアップを作成",o="バックアップを開始しました",s="利用可能なバックアップ",D="復元",c="復元を開始しました",n="バックアップから復元",r=`本当にこのバックアップから復元しますか？ 
+ 既存のデータは削除されるため、最初にバックアップを作成することを強くお勧めします。`,a="ダウンロード",u="削除",p="バックアップは正常に削除されました",d="バックアップを完全に削除",l="本当にこのバックアップを完全に削除してもよろしいですか？",B={Backup:t,Name:"名前",Create:e,BackupStarted:o,BackupsHeader:s,Restore:"復元",RestoreStarted:c,RestorePrompt:n,RestorePromptBody:r,Download:a,Delete:"削除",Deleted:p,DeletePrompt:d,DeletePromptBody:l};export{t as Backup,o as BackupStarted,s as BackupsHeader,e as Create,u as Delete,d as DeletePrompt,l as DeletePromptBody,p as Deleted,a as Download,m as Name,D as Restore,n as RestorePrompt,r as RestorePromptBody,c as RestoreStarted,B as default};
+//# sourceMappingURL=backup-Da7fR-FM.js.map

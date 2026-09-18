@@ -1,0 +1,3 @@
+const d="备份",l="名称",t="创建备份",e="备份已开始",o="可用的备份",D="恢复",s="恢复已开始",c="从备份中还原",n=`您真的想要从这个备份中还原吗？ 
+ 这将删除任何现有的数据，因此强烈建议先创建一个备份。`,m="下载",u="删除",a="成功删除备份",r="永久删除备份",p="您真的想要彻底删除此备份吗？",B={Backup:"备份",Name:"名称",Create:t,BackupStarted:e,BackupsHeader:o,Restore:"恢复",RestoreStarted:s,RestorePrompt:c,RestorePromptBody:n,Download:"下载",Delete:"删除",Deleted:a,DeletePrompt:r,DeletePromptBody:p};export{d as Backup,e as BackupStarted,o as BackupsHeader,t as Create,u as Delete,r as DeletePrompt,p as DeletePromptBody,a as Deleted,m as Download,l as Name,D as Restore,c as RestorePrompt,n as RestorePromptBody,s as RestoreStarted,B as default};
+//# sourceMappingURL=backup-D9TfNdBl.js.map

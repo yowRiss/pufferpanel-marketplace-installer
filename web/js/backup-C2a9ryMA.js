@@ -1,0 +1,3 @@
+const d="備份",l="名稱",t="建立備份",e="備份已開始",o="可用的備份",D="還原",s="還原已開始",c="還原到備份",n=`你是否確定要還原到這個備份？
+這將會刪除現有的所有資料，因此我們強烈建議在還原前先進行備份。`,m="下載",u="刪除",a="已刪除備份",r="永久刪除備份",p="你確定要永久刪除此備份？",B={Backup:"備份",Name:"名稱",Create:t,BackupStarted:e,BackupsHeader:o,Restore:"還原",RestoreStarted:s,RestorePrompt:c,RestorePromptBody:n,Download:"下載",Delete:"刪除",Deleted:a,DeletePrompt:r,DeletePromptBody:p};export{d as Backup,e as BackupStarted,o as BackupsHeader,t as Create,u as Delete,r as DeletePrompt,p as DeletePromptBody,a as Deleted,m as Download,l as Name,D as Restore,c as RestorePrompt,n as RestorePromptBody,s as RestoreStarted,B as default};
+//# sourceMappingURL=backup-C2a9ryMA.js.map
