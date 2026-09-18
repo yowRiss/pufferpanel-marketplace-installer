@@ -124,6 +124,15 @@ do_install() {
         chown pufferpanel:pufferpanel "${target_bin}" 2>/dev/null || true
     fi
 
+    # Ensure daemon data directories exist (e.g. backups directory required by daemon)
+    local data_dir="/var/lib/pufferpanel"
+    if [[ -d "${data_dir}" ]]; then
+        mkdir -p "${data_dir}/backups"
+        if id "pufferpanel" &>/dev/null; then
+            chown -R pufferpanel:pufferpanel "${data_dir}/backups" 2>/dev/null || true
+        fi
+    fi
+
     echo -e "${BLUE}==>${NC} Starting ${service_name}..."
     systemctl start "${service_name}"
 
