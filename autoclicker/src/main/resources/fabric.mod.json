@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "autoclicker",
+  "version": "1.0.2",
+  "name": "Server Auto Clicker",
+  "description": "Full server-side Auto Clicker with sword attack (full sweep damage) and block mining modes, with display-only first-join popup.",
+  "authors": [
+    "Antigravity"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.autoclicker.AutoClickerMod"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.0",
+    "minecraft": ">=26.2"
+  }
+}

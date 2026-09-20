@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "customjukebox",
+  "version": "1.1.0",
+  "name": "Custom Jukebox Discs",
+  "description": "Server-side custom music discs with in-game /musicdisc add <url> download support, looped 3D locational audio via Simple Voice Chat.",
+  "authors": [
+    "Antigravity"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.customjukebox.CustomJukeboxMod"
+    ],
+    "voicechat": [
+      "com.customjukebox.CustomJukeboxPlugin"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.0",
+    "minecraft": ">=26.2",
+    "voicechat": ">=2.6.0"
+  }
+}
