@@ -2,6 +2,7 @@ package com.smartdifficulty;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundTabListPacket;
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
@@ -30,6 +31,7 @@ public class SmartDifficultyManager {
 
     private static long lastKnownDay = -1;
     private static boolean fullMoonAlertSent = false;
+    private static long lastTabUpdate = -1; // tracks tick of last tab list update
 
     public static long getWorldTime(Level level) {
         try {
@@ -380,6 +382,85 @@ public class SmartDifficultyManager {
         } else if (timeOfDay < 12000L || timeOfDay > 23800L) {
             fullMoonAlertSent = false;
         }
+
+        // 3. Update Tab List Header every 20 ticks (1 second)
+        long gameTick = world.getGameTime();
+        if (gameTick - lastTabUpdate >= 20L) {
+            updateTabList(world, currentDay, timeOfDay, fullMoon);
+            lastTabUpdate = gameTick;
+        }
+    }
+
+    public static void updateTabListForPlayer(ServerPlayer player) {
+        // Called when a player joins so they immediately see the tab header
+        ServerLevel world = (ServerLevel) player.level();
+        long currentDay = getDay(world);
+        long timeOfDay = getWorldTime(world) % 24000L;
+        boolean fullMoon = isFullMoon(world);
+        sendTabListToPlayer(player, currentDay, timeOfDay, fullMoon);
+    }
+
+    private static void updateTabList(ServerLevel world, long day, long timeOfDay, boolean fullMoon) {
+        for (ServerPlayer player : world.getServer().getPlayerList().getPlayers()) {
+            try {
+                sendTabListToPlayer(player, day, timeOfDay, fullMoon);
+            } catch (Exception ignored) {}
+        }
+    }
+
+    private static void sendTabListToPlayer(ServerPlayer player, long day, long timeOfDay, boolean fullMoon) {
+        int tier = getDifficultyTier(day, fullMoon);
+        String moonPhase = getMoonPhaseName((ServerLevel) player.level());
+
+        // Time of day display
+        int hours = (int) ((timeOfDay / 1000 + 6) % 24);
+        int minutes = (int) ((timeOfDay % 1000) * 60 / 1000);
+        String ampm = hours >= 12 ? "PM" : "AM";
+        int hours12 = hours % 12 == 0 ? 12 : hours % 12;
+        String timeStr = String.format("%02d:%02d %s", hours12, minutes, ampm);
+
+        // Day color based on tier
+        String dayColor = switch (tier) {
+            case 1 -> "§a";          // Green – early
+            case 2 -> "§2";          // Dark green
+            case 3 -> "§e";          // Yellow
+            case 4 -> "§6";          // Gold – Iron Era
+            case 5 -> "§b";          // Aqua – Diamond Era
+            default -> "§d";         // Purple – Nightmare
+        };
+
+        // Tier label short form
+        String tierLabel = switch (tier) {
+            case 1 -> "§aEarly Survival";
+            case 2 -> "§2Developing World";
+            case 3 -> "§eHardened Hostiles";
+            case 4 -> "§6Iron Era";
+            case 5 -> "§bDiamond Era";
+            default -> "§dNightmare Era";
+        };
+
+        // Moon indicator
+        String moonIcon = fullMoon ? " §c☽ Full Moon" : "";
+
+        // Build header text
+        String header =
+            "§8§m                                                              \n" +
+            "  §f⚔ §l§6NERCT Minecraft Server§r  §7│  " + dayColor + "§lDay " + day + "§r" + moonIcon + "\n" +
+            "  §7Time: §f" + timeStr + "  §8│  §7Difficulty: " + tierLabel + "\n" +
+            "§8§m                                                              ";
+
+        // Build footer text
+        String footer =
+            "§8§m                                                              \n" +
+            "  §7Server: §fmc.nerct.dev:25565  §8│  §7Moon: §f" + moonPhase + "\n" +
+            "§8§m                                                              ";
+
+        try {
+            player.connection.send(new ClientboundTabListPacket(
+                Component.literal(header),
+                Component.literal(footer)
+            ));
+        } catch (Exception ignored) {}
     }
 
     private static void broadcastNewDay(ServerLevel world, long day) {

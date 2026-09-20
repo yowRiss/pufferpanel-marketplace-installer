@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.world.entity.Mob;
 
 public class SmartDifficultyMod implements ModInitializer {
@@ -31,10 +32,17 @@ public class SmartDifficultyMod implements ModInitializer {
             }
         });
 
-        // Register Level Tick for Day Rollover and Full Moon Rise announcements
+        // Register Level Tick for Day Rollover, Full Moon Rise, and Tab List updates
         ServerTickEvents.END_LEVEL_TICK.register(world -> {
             try {
                 SmartDifficultyManager.onLevelTick(world);
+            } catch (Exception ignored) {}
+        });
+
+        // Send Tab List header immediately when a player joins
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            try {
+                SmartDifficultyManager.updateTabListForPlayer(handler.player);
             } catch (Exception ignored) {}
         });
 
