@@ -51,15 +51,28 @@ public class SmartDifficultyManager {
         return Math.max(1L, day);
     }
 
+    public static int getMoonCycleDays() {
+        int interval = SmartDifficultyConfig.get().fullMoonIntervalDays;
+        return interval > 0 ? interval : 10;
+    }
+
     public static int getMoonPhaseIndex(Level level) {
         long rawDay = getWorldTime(level) / 24000L;
-        return (int) (rawDay % 8L);
+        int cycle = getMoonCycleDays();
+        return (int) (rawDay % (long) cycle);
     }
 
     public static String getMoonPhaseName(Level level) {
         int index = getMoonPhaseIndex(level);
-        return switch (index) {
-            case 0 -> "Full Moon";
+        int cycle = getMoonCycleDays();
+        if (index == 0) {
+            return "Full Moon";
+        }
+        if (cycle <= 1) {
+            return "Full Moon";
+        }
+        int phase = 1 + (int) (((long) (index - 1) * 7L) / (long) (cycle - 1));
+        return switch (phase) {
             case 1 -> "Waning Gibbous";
             case 2 -> "Third Quarter";
             case 3 -> "Waning Crescent";
@@ -67,7 +80,7 @@ public class SmartDifficultyManager {
             case 5 -> "Waxing Crescent";
             case 6 -> "First Quarter";
             case 7 -> "Waxing Gibbous";
-            default -> "Unknown";
+            default -> "Waning Gibbous";
         };
     }
 

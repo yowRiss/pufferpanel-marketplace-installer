@@ -21,6 +21,7 @@ public class SmartDifficultyConfig {
     public boolean buffMobEffects = true;
     public double day100IronChance = 0.85;
     public double day200DiamondSlotChance = 0.40;
+    public int fullMoonIntervalDays = 10;
 
     private static SmartDifficultyConfig instance = new SmartDifficultyConfig();
 
