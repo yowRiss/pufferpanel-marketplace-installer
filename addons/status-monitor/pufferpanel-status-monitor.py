@@ -13,7 +13,7 @@ import datetime
 CONFIG_PATH = "/etc/pufferpanel/status-monitor.json"
 
 DEFAULT_CONFIG = {
-    "webhook_url": "https://discord.com/api/webhooks/1551123814715363380/oJw0Qxln2mhZf-qQ_v-qbtKP03xh_Gdb-BZEeKrop4zgFOMEBYrmdtYJbYiY2wMpo4Z6",
+    "webhook_url": "",  # Set via /etc/pufferpanel/status-monitor.json or PufferPanel Settings
     "server_id": "35ca4939",
     "server_port": 25565,
     "server_ip": "127.0.0.1",
@@ -555,6 +555,9 @@ def build_discord_embed(status_data):
     }
 
 def update_discord_message(webhook_url, state_file, status_data):
+    # Skip if no valid webhook URL configured
+    if not webhook_url or not webhook_url.startswith("https://discord.com/api/webhooks/") or "YOUR_WEBHOOK" in webhook_url:
+        return
     msg_id = get_or_create_discord_message(webhook_url, state_file)
     if not msg_id:
         return
