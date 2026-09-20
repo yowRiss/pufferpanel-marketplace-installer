@@ -1,0 +1,14 @@
+[Unit]
+Description=PufferPanel Live Server Status & Discord Webhook Monitor
+After=network.target pufferpanel.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /usr/local/bin/pufferpanel-status-monitor.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

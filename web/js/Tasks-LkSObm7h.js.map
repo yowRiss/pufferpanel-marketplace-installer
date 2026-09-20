@@ -1,1 +1,0 @@
-{"version":3,"file":"Tasks-LkSObm7h.js","sources":["../../src/components/server/Tasks.vue"],"sourcesContent":["<script setup>\ndefineProps({\n  server: { type: Object, required: true }\n})\n</script>\n\n<template>\n  <div>\n    Tasks not yet implemented\n  </div>\n</template>\n"],"names":["_openBlock","_createElementBlock"],"mappings":"uIAOEA,EAAA,EAAAC,EAEM,WAFD,6BAEL"}

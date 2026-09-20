@@ -1,0 +1,14 @@
+{
+  "webhook_url": "https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN",
+  "server_id": "35ca4939",
+  "server_port": 25565,
+  "server_ip": "127.0.0.1",
+  "tunnel_host": "147.185.221.215",
+  "tunnel_port": 21097,
+  "server_domain": "mc.nerct.dev:25565",
+  "discord_update_interval": 30,
+  "telemetry_interval": 5,
+  "db_path": "/var/lib/pufferpanel/uptime_tracker.db",
+  "status_file": "/var/www/pufferpanel/js/server-status.json",
+  "state_file": "/var/lib/pufferpanel/discord-status-message.json"
+}

@@ -151,6 +151,22 @@ do_install() {
         echo -e "    ${GREEN}[OK] Auto-backup timer enabled (every 6 hours, max 3 retained)${NC}"
     fi
 
+    # Install Status-Monitor addon if available
+    local monitor_addon_dir="${SCRIPT_DIR}/addons/status-monitor"
+    if [[ -d "${monitor_addon_dir}" ]]; then
+        echo -e "${BLUE}==>${NC} Installing Live Status Monitor & Discord Webhook Daemon..."
+        cp "${monitor_addon_dir}/pufferpanel-status-monitor.py" /usr/local/bin/pufferpanel-status-monitor.py
+        chmod +x /usr/local/bin/pufferpanel-status-monitor.py
+        if [[ ! -f /etc/pufferpanel/status-monitor.json && -f "${monitor_addon_dir}/status-monitor.json.example" ]]; then
+            mkdir -p /etc/pufferpanel
+            cp "${monitor_addon_dir}/status-monitor.json.example" /etc/pufferpanel/status-monitor.json
+        fi
+        cp "${monitor_addon_dir}/pufferpanel-status-monitor.service" /etc/systemd/system/
+        systemctl daemon-reload
+        systemctl enable --now pufferpanel-status-monitor.service 2>/dev/null || true
+        echo -e "    ${GREEN}[OK] Live Status Monitor daemon enabled${NC}"
+    fi
+
     echo -e "${BLUE}==>${NC} Starting ${service_name}..."
     systemctl start "${service_name}"
 
