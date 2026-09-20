@@ -1,13 +1,10 @@
-self.addEventListener('install', () => {
-  self.skipWaiting()
-})
+self.addEventListener('install', (e) => {
+  self.skipWaiting();
+});
 
-self.addEventListener('activate', () => {
-  self.clients.matchAll({
-    type: 'window'
-  }).then(clients => {
-    for (let client of clients) {
-      client.navigate(client.url)
-    }
-  })
-})
+self.addEventListener('activate', (e) => {
+  self.registration.unregister();
+  e.waitUntil(
+    caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+  );
+});
