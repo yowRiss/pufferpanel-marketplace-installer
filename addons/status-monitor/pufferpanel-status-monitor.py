@@ -622,12 +622,18 @@ def main():
     
     server_pid = find_server_pid(cfg["server_id"])
     last_discord_update = 0
+    last_cfg_reload = time.time()
     
     print("=== PufferPanel Live Status Monitor Daemon Started ===")
     
     while True:
         try:
             curr_time = time.time()
+            
+            # Auto-reload config every 10s so web UI changes take effect automatically
+            if curr_time - last_cfg_reload >= 10:
+                cfg = load_config()
+                last_cfg_reload = curr_time
             
             # 1. Query Minecraft
             mc = query_minecraft(cfg["server_ip"], cfg["server_port"])
