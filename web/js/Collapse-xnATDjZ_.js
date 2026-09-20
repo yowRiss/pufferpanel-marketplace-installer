@@ -1,0 +1,2 @@
+import{r as a,c as n,o as r,a as s,t as c,M as i,j as p}from"./index-Bun1hvon.js";const d=["textContent"],u={class:"content"},f={__name:"Collapse",props:{title:{type:String,default:()=>""}},setup(l){const e=a(!1);return(o,t)=>(r(),n("div",{class:p(["collapse",e.value?"open":"closed"])},[s("div",{class:"title",onClick:t[0]||(t[0]=_=>e.value=!e.value),textContent:c(l.title)},null,8,d),s("div",u,[i(o.$slots,"default")])],2))}};export{f as _};
+//# sourceMappingURL=Collapse-xnATDjZ_.js.map

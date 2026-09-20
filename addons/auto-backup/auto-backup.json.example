@@ -1,0 +1,24 @@
+{
+  "enabled": true,
+  "server_id": "35ca4939",
+  "server_dir": "/var/lib/pufferpanel/servers/35ca4939",
+  "backup_dir": "/var/lib/pufferpanel/backups/35ca4939",
+  "database_path": "/var/lib/pufferpanel/database.db",
+  "max_backups": 3,
+  "include_targets": [
+    "world",
+    "config",
+    "defaultconfigs",
+    "server.properties",
+    "whitelist.json",
+    "ops.json",
+    "banned-players.json",
+    "banned-ips.json",
+    "usercache.json"
+  ],
+  "include_mods": true,
+  "safe_save": true,
+  "console_pts": "/dev/pts/0",
+  "discord_webhook": "https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN",
+  "notify_discord": true
+}

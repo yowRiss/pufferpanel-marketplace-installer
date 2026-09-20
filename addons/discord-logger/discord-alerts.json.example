@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "webhook_url": "https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN",
+  "bot_name": "algojo rama",
+  "avatar_url": "https://cdn.icon-icons.com/icons2/2699/PNG/512/minecraft_logo_icon_168974.png",
+  "spike_threshold_mbps": 50,
+  "mention_critical": true,
+  "mention_discord_id": "586719784490631180",
+  "alerts": {
+    "disconnects": true,
+    "critical_errors": true,
+    "crashes": true,
+    "network_spikes": false,
+    "normal_leaves": false
+  }
+}

@@ -1,0 +1,14 @@
+[Unit]
+Description=PufferPanel Discord Logger & Real-Time Alert Daemon
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /usr/local/bin/pufferpanel-discord-logger.py
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

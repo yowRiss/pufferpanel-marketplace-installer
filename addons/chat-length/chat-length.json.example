@@ -1,0 +1,4 @@
+{
+  "max_message_length": 500,
+  "description": "Maximum character limit for commands like /whisper, /tell, /msg, /say, /me (vanilla default was 256)"
+}

@@ -133,6 +133,24 @@ do_install() {
         fi
     fi
 
+    # Install Auto-Backup addon if available
+    local backup_addon_dir="${SCRIPT_DIR}/addons/auto-backup"
+    if [[ -d "${backup_addon_dir}" ]]; then
+        echo -e "${BLUE}==>${NC} Installing Auto-Backup tool & systemd timer..."
+        cp "${backup_addon_dir}/pufferpanel-auto-backup.py" /usr/local/bin/pufferpanel-auto-backup.py
+        chmod +x /usr/local/bin/pufferpanel-auto-backup.py
+        ln -sf /usr/local/bin/pufferpanel-auto-backup.py /usr/local/bin/pufferpanel-auto-backup
+        if [[ ! -f /etc/pufferpanel/auto-backup.json && -f "${backup_addon_dir}/auto-backup.json.example" ]]; then
+            mkdir -p /etc/pufferpanel
+            cp "${backup_addon_dir}/auto-backup.json.example" /etc/pufferpanel/auto-backup.json
+        fi
+        cp "${backup_addon_dir}/pufferpanel-auto-backup.service" /etc/systemd/system/
+        cp "${backup_addon_dir}/pufferpanel-auto-backup.timer" /etc/systemd/system/
+        systemctl daemon-reload
+        systemctl enable --now pufferpanel-auto-backup.timer 2>/dev/null || true
+        echo -e "    ${GREEN}[OK] Auto-backup timer enabled (every 6 hours, max 3 retained)${NC}"
+    fi
+
     echo -e "${BLUE}==>${NC} Starting ${service_name}..."
     systemctl start "${service_name}"
 
