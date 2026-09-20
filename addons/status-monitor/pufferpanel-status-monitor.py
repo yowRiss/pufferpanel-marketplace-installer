@@ -11,9 +11,11 @@ import urllib.request
 import datetime
 
 CONFIG_PATH = "/etc/pufferpanel/status-monitor.json"
+# Stats webhook is managed via PufferPanel Settings UI -> saved to server files
+STATS_WEBHOOK_FILE = "/var/lib/pufferpanel/servers/35ca4939/status-monitor-webhook.json"
 
 DEFAULT_CONFIG = {
-    "webhook_url": "",  # Set via /etc/pufferpanel/status-monitor.json or PufferPanel Settings
+    "webhook_url": "",  # Set via PufferPanel Settings -> Stats Webhook or /etc/pufferpanel/status-monitor.json
     "server_id": "35ca4939",
     "server_port": 25565,
     "server_ip": "127.0.0.1",
@@ -29,14 +31,25 @@ DEFAULT_CONFIG = {
 }
 
 def load_config():
+    cfg = dict(DEFAULT_CONFIG)
+    # 1. Load base config from /etc/pufferpanel/status-monitor.json
     if os.path.exists(CONFIG_PATH):
         try:
             with open(CONFIG_PATH, "r") as f:
-                cfg = json.load(f)
-                return {**DEFAULT_CONFIG, **cfg}
+                cfg = {**cfg, **json.load(f)}
         except Exception as e:
             print(f"Error loading config: {e}, using defaults")
-    return DEFAULT_CONFIG
+    # 2. Override stats webhook_url from PufferPanel UI-managed file if present
+    if os.path.exists(STATS_WEBHOOK_FILE):
+        try:
+            with open(STATS_WEBHOOK_FILE, "r") as f:
+                wh = json.load(f)
+                url = wh.get("stats_webhook_url", "").strip()
+                if url:
+                    cfg["webhook_url"] = url
+        except Exception as e:
+            print(f"Error loading stats webhook file: {e}")
+    return cfg
 
 # --- Database & Uptime Tracking ---
 def init_db(db_path):
