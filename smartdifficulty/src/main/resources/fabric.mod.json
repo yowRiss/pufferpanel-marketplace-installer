@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "smartdifficulty",
+  "version": "1.0.0",
+  "name": "Smart World Difficulty & Day Counter",
+  "description": "100% server-side mod featuring world day counter, progressive mob scaling (Day 100 Iron Era, Day 200 Diamond Era with randomized gear/weapons), Full Moon sleep prohibition, and atmospheric blood moon mechanics.",
+  "authors": [
+    "Antigravity"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.smartdifficulty.SmartDifficultyMod"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.0",
+    "minecraft": ">=26.2"
+  }
+}
