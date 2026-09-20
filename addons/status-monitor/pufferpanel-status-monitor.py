@@ -233,10 +233,39 @@ def find_server_pid(server_id):
         pass
     return None
 
-def get_server_resources(pid):
+def get_server_resources(pid, server_id="35ca4939"):
     cpu = 0.0
     mem_used = 0
-    mem_max = 5246197760 # 5003M default allocated
+    mem_max = 7168 * 1024 * 1024 # 7GB default (7168 MB)
+
+    # 1. Check running process cmdline for exact -Xmx parameter
+    if pid:
+        try:
+            with open(f"/proc/{pid}/cmdline", "rb") as f:
+                cmd = f.read().decode(errors="ignore")
+                import re
+                m = re.search(r"-Xmx(\d+)([kKmMgG]?)", cmd)
+                if m:
+                    val = int(m.group(1))
+                    unit = m.group(2).upper()
+                    if unit == "G": mem_max = val * 1024 * 1024 * 1024
+                    elif unit == "M" or not unit: mem_max = val * 1024 * 1024
+                    elif unit == "K": mem_max = val * 1024
+        except Exception:
+            pass
+
+    # 2. Check server JSON definition
+    json_path = f"/var/lib/pufferpanel/servers/{server_id}.json"
+    if os.path.exists(json_path):
+        try:
+            with open(json_path, "r") as f:
+                d = json.load(f)
+                val = d.get("data", {}).get("memory", {}).get("value")
+                if val:
+                    mem_max = int(val) * 1024 * 1024
+        except Exception:
+            pass
+
     if not pid:
         return 0.0, 0, mem_max
 
@@ -594,7 +623,7 @@ def main():
             # 3. Resources
             if not server_pid or int(curr_time) % 60 == 0:
                 server_pid = find_server_pid(cfg["server_id"])
-            cpu, mem_used, mem_max = get_server_resources(server_pid)
+            cpu, mem_used, mem_max = get_server_resources(server_pid, cfg["server_id"])
             mem_pct = round((mem_used / mem_max) * 100.0, 1) if mem_max > 0 else 0.0
             
             # 4. Record to SQLite & calculate uptime stats
