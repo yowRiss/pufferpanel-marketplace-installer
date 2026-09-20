@@ -11,3 +11,5 @@ bin/pufferpanel
 .DS_Store
 *~
 *.swp
+*.class
+modenforcer/build/

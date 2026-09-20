@@ -1,0 +1,38 @@
+{
+  "enabled": true,
+  "checkDelaySeconds": 4,
+  "kickTitle": "§c§l[Required Mods Missing]",
+  "kickHeader": "§fTo play on this server, you must install the following client mod(s):",
+  "kickFooter": "§7Please install the required mod(s) and rejoin the server.",
+  "requiredMods": [
+    {
+      "id": "voicechat",
+      "name": "Simple Voice Chat",
+      "channel": "voicechat:secret",
+      "url": "https://modrinth.com/mod/simple-voice-chat",
+      "enabled": true
+    },
+    {
+      "id": "waystones",
+      "name": "Waystones",
+      "channel": "waystones:sync_waystones",
+      "url": "https://modrinth.com/mod/waystones",
+      "enabled": false
+    },
+    {
+      "id": "jade",
+      "name": "Jade",
+      "channel": "jade:request_data",
+      "url": "https://modrinth.com/mod/jade",
+      "enabled": false
+    }
+  ],
+  "suppressedLogPatterns": [
+    "standing on air - force-sending blocks below",
+    "Mismatch in destroy block pos"
+  ],
+  "tabPingEnabled": true,
+  "tabPingIntervalTicks": 20,
+  "fastPingRefresh": false,
+  "pingRefreshIntervalMs": 1000
+}

@@ -51,7 +51,7 @@ Or run non-interactively:
 ### ⚡ JVM & Network Enhancements
 - **JVM Arguments Passthrough**: Allows passing complex `-javaagent:` and `-D` properties without unwanted shell-quoting.
 - **500-Character System Chat**: Pre-bundled `ChatLengthAgent.jar` extending system chat messages (e.g. `/whisper`) from 256 to 500 characters.
-- **ModEnforcer Security & OP GUI**: Ensures players join with required client mods (e.g. Simple Voice Chat) and displays true tab ping latency.
+- **[ModEnforcer Server Mod](modenforcer/README.md)**: Dedicated server-side Fabric mod enforcing mandatory client mods (e.g. Simple Voice Chat), in-game OP GUI (`/modenforcer gui`), numerical real-time Tab ping (`[45ms]`), `/ping` & `/backup` commands, and log spam filter. See the [ModEnforcer Guide](modenforcer/README.md) for full documentation and source code.
 - **Real-Time Discord Logger**: Monitors server logs for crashes, triggers staff mentions (`@mention`), provides root cause diagnoses, and alerts on abnormal network usage spikes.
 
 ---
