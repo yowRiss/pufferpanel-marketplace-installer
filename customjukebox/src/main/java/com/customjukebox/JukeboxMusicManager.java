@@ -66,6 +66,16 @@ public class JukeboxMusicManager {
         }
     }
 
+    public static void onPlayerConnected(VoicechatConnection conn) {
+        for (JukeboxPlayback pb : activePlaybacks.values()) {
+            if (pb.getChannel() instanceof StaticAudioChannel staticChannel) {
+                try {
+                    staticChannel.addTarget(conn);
+                } catch (Exception ignored) {}
+            }
+        }
+    }
+
     public static List<String> getTrackNames() {
         List<String> list = new ArrayList<>();
         if (!MUSIC_DIR.exists() || !MUSIC_DIR.isDirectory()) return list;
@@ -191,7 +201,7 @@ public class JukeboxMusicManager {
                     }
                 });
 
-                // Set calibrated master volume (default 65 = -3.7 dB headroom against Opus bass clipping)
+                // Calibrated master volume (default 65 = -3.7 dB headroom against Opus bass clipping)
                 lavaPlayer.setVolume(JukeboxConfig.getVolume());
                 lavaPlayer.playTrack(track);
 
@@ -214,20 +224,26 @@ public class JukeboxMusicManager {
 
                     double maxDistSq = range * range;
                     staticChannel.setFilter(player -> {
-                        if (player == null) return false;
-                        if (player.getServerLevel() != null && !player.getServerLevel().equals(vLevel)) {
+                        try {
+                            if (player == null) return false;
+                            if (player.getServerLevel() != null && vLevel != null) {
+                                if (!player.getServerLevel().equals(vLevel)) {
+                                    return false;
+                                }
+                            }
+                            Position pPos = player.getPosition();
+                            if (pPos == null) return false;
+                            double dx = pPos.getX() - (pos.getX() + 0.5);
+                            double dy = pPos.getY() - (pos.getY() + 0.5);
+                            double dz = pPos.getZ() - (pos.getZ() + 0.5);
+                            return (dx * dx + dy * dy + dz * dz) <= maxDistSq;
+                        } catch (Exception ignored) {
                             return false;
                         }
-                        Position pPos = player.getPosition();
-                        if (pPos == null) return false;
-                        double dx = pPos.getX() - (pos.getX() + 0.5);
-                        double dy = pPos.getY() - (pos.getY() + 0.5);
-                        double dz = pPos.getZ() - (pos.getZ() + 0.5);
-                        return (dx * dx + dy * dy + dz * dz) <= maxDistSq;
                     });
 
                     if (level instanceof net.minecraft.server.level.ServerLevel sl) {
-                        for (net.minecraft.server.level.ServerPlayer sp : sl.players()) {
+                        for (net.minecraft.server.level.ServerPlayer sp : new ArrayList<>(sl.players())) {
                             VoicechatConnection conn = api.getConnectionOf(sp.getUUID());
                             if (conn != null) {
                                 staticChannel.addTarget(conn);
@@ -253,8 +269,10 @@ public class JukeboxMusicManager {
 
                         while (active.get()) {
                             buffer.clear();
+                            frame.setBuffer(buffer);
                             boolean provided = lavaPlayer.provide(frame, 40, TimeUnit.MILLISECONDS);
                             if (provided) {
+                                buffer.rewind();
                                 ShortBuffer sb = buffer.asShortBuffer();
                                 short[] pcm = new short[960];
                                 for (int i = 0; i < 960; i++) {
@@ -280,21 +298,22 @@ public class JukeboxMusicManager {
                             targetUpdateCounter++;
                             if (targetUpdateCounter >= 100) { // every ~2 seconds
                                 targetUpdateCounter = 0;
-                                if (channel instanceof StaticAudioChannel staticChannel) {
-                                    if (level instanceof net.minecraft.server.level.ServerLevel sl) {
-                                        for (net.minecraft.server.level.ServerPlayer sp : sl.players()) {
+                                try {
+                                    if (channel instanceof StaticAudioChannel staticChannel && level instanceof net.minecraft.server.level.ServerLevel sl) {
+                                        for (net.minecraft.server.level.ServerPlayer sp : new ArrayList<>(sl.players())) {
                                             VoicechatConnection conn = api.getConnectionOf(sp.getUUID());
                                             if (conn != null) {
                                                 staticChannel.addTarget(conn);
                                             }
                                         }
                                     }
-                                }
+                                } catch (Exception ignored) {}
                             }
                         }
                     } catch (InterruptedException ignored) {
                     } catch (Exception e) {
-                        System.err.println("[CustomJukebox] Feeder error: " + e.getMessage());
+                        System.err.println("[CustomJukebox] Feeder error: " + e.getClass().getName() + ": " + e.getMessage());
+                        e.printStackTrace(System.err);
                     } finally {
                         if (!active.get()) {
                             audioQueue.clear();
@@ -351,7 +370,7 @@ public class JukeboxMusicManager {
                 String modeLabel = "3d".equalsIgnoreCase(JukeboxConfig.getMode()) ? "3D Positional" : "Studio Master";
                 Component msg = Component.literal("§6Now playing: §e" + displayTitle + " §7(" + modeLabel + ")");
                 if (level instanceof net.minecraft.server.level.ServerLevel sl) {
-                    for (ServerPlayer sp : sl.players()) {
+                    for (ServerPlayer sp : new ArrayList<>(sl.players())) {
                         if (sp.blockPosition().closerThan(pos, range)) {
                             sp.sendSystemMessage(msg, true);
                         }
@@ -359,6 +378,7 @@ public class JukeboxMusicManager {
                 }
             } catch (Exception e) {
                 System.err.println("[CustomJukebox] Failed to play track " + trackName + ": " + e.getMessage());
+                e.printStackTrace(System.err);
             }
         });
 

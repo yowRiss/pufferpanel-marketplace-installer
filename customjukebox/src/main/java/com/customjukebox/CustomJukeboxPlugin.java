@@ -3,6 +3,7 @@ package com.customjukebox;
 import de.maxhenkel.voicechat.api.VoicechatPlugin;
 import de.maxhenkel.voicechat.api.VoicechatServerApi;
 import de.maxhenkel.voicechat.api.events.EventRegistration;
+import de.maxhenkel.voicechat.api.events.PlayerConnectedEvent;
 import de.maxhenkel.voicechat.api.events.VoicechatServerStartedEvent;
 import de.maxhenkel.voicechat.api.events.VoicechatServerStoppedEvent;
 
@@ -20,6 +21,11 @@ public class CustomJukeboxPlugin implements VoicechatPlugin {
     public void registerEvents(EventRegistration registration) {
         registration.registerEvent(VoicechatServerStartedEvent.class, this::onServerStarted);
         registration.registerEvent(VoicechatServerStoppedEvent.class, this::onServerStopped);
+        registration.registerEvent(PlayerConnectedEvent.class, event -> {
+            if (event.getConnection() != null) {
+                JukeboxMusicManager.onPlayerConnected(event.getConnection());
+            }
+        });
     }
 
     private void onServerStarted(VoicechatServerStartedEvent event) {

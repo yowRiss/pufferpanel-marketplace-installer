@@ -24,6 +24,10 @@ public class JukeboxPlayback {
         this.audioQueue = audioQueue;
     }
 
+    public AudioChannel getChannel() {
+        return channel;
+    }
+
     public String getTrackTitle() {
         return trackTitle;
     }
