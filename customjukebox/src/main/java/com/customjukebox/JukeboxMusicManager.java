@@ -1,6 +1,7 @@
 package com.customjukebox;
 
 import com.sedmelluq.discord.lavaplayer.format.Pcm16AudioDataFormat;
+import com.sedmelluq.discord.lavaplayer.player.AudioConfiguration;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -16,6 +17,7 @@ import de.maxhenkel.voicechat.api.ServerLevel;
 import de.maxhenkel.voicechat.api.VoicechatServerApi;
 import de.maxhenkel.voicechat.api.audiochannel.LocationalAudioChannel;
 import de.maxhenkel.voicechat.api.opus.OpusEncoder;
+import de.maxhenkel.voicechat.api.opus.OpusEncoderMode;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -40,7 +42,10 @@ public class JukeboxMusicManager {
         }
         playerManager = new DefaultAudioPlayerManager();
         playerManager.registerSourceManager(new LocalAudioSourceManager());
-        playerManager.getConfiguration().setOutputFormat(new Pcm16AudioDataFormat(1, 48000, 960, true));
+        AudioConfiguration config = playerManager.getConfiguration();
+        config.setOutputFormat(new Pcm16AudioDataFormat(2, 48000, 960, true));
+        config.setResamplingQuality(AudioConfiguration.ResamplingQuality.HIGH);
+        config.setOpusEncodingQuality(10);
     }
 
     public static File getMusicDir() {
@@ -172,6 +177,7 @@ public class JukeboxMusicManager {
                     }
                 });
 
+                lavaPlayer.setVolume(95);
                 lavaPlayer.playTrack(track);
 
                 Position vPos = api.createPosition(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
@@ -182,10 +188,10 @@ public class JukeboxMusicManager {
                 channel.setDistance(32.0f);
                 channel.setCategory("music");
 
-                OpusEncoder encoder = api.createEncoder();
+                OpusEncoder encoder = api.createEncoder(OpusEncoderMode.AUDIO);
 
                 MutableAudioFrame frame = new MutableAudioFrame();
-                ByteBuffer buffer = ByteBuffer.allocate(1920);
+                ByteBuffer buffer = ByteBuffer.allocate(3840);
                 frame.setBuffer(buffer);
                 frame.setFormat(playerManager.getConfiguration().getOutputFormat());
 
@@ -206,7 +212,13 @@ public class JukeboxMusicManager {
                             byte[] raw = buffer.array();
                             short[] pcm = new short[960];
                             for (int i = 0; i < 960; i++) {
-                                pcm[i] = (short) ((raw[i * 2] << 8) | (raw[i * 2 + 1] & 0xFF));
+                                int idx = i * 4;
+                                short left = (short) ((raw[idx] << 8) | (raw[idx + 1] & 0xFF));
+                                short right = (short) ((raw[idx + 2] << 8) | (raw[idx + 3] & 0xFF));
+                                int mixed = (left + right) / 2;
+                                if (mixed > 32767) mixed = 32767;
+                                else if (mixed < -32768) mixed = -32768;
+                                pcm[i] = (short) mixed;
                             }
                             return pcm;
                         } catch (Exception e) {
