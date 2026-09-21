@@ -185,15 +185,56 @@ public class JukeboxMusicManager {
                 UUID channelId = UUID.randomUUID();
 
                 LocationalAudioChannel channel = api.createLocationalAudioChannel(channelId, vLevel, vPos);
-                channel.setDistance(32.0f);
+                channel.setDistance(64.0f);
                 channel.setCategory("music");
 
                 OpusEncoder encoder = api.createEncoder(OpusEncoderMode.AUDIO);
 
-                MutableAudioFrame frame = new MutableAudioFrame();
-                ByteBuffer buffer = ByteBuffer.allocate(3840);
-                frame.setBuffer(buffer);
-                frame.setFormat(playerManager.getConfiguration().getOutputFormat());
+                // Decoupled jitter buffer queue (up to 100 frames = 2 seconds of audio)
+                BlockingQueue<short[]> audioQueue = new LinkedBlockingQueue<>(100);
+
+                Thread feederThread = new Thread(() -> {
+                    try {
+                        MutableAudioFrame frame = new MutableAudioFrame();
+                        ByteBuffer buffer = ByteBuffer.allocate(3840);
+                        frame.setBuffer(buffer);
+                        frame.setFormat(playerManager.getConfiguration().getOutputFormat());
+
+                        while (active.get()) {
+                            buffer.clear();
+                            if (lavaPlayer.provide(frame, 40, TimeUnit.MILLISECONDS)) {
+                                byte[] raw = buffer.array();
+                                short[] pcm = new short[960];
+                                for (int i = 0; i < 960; i++) {
+                                    int idx = i * 4;
+                                    short left = (short) ((raw[idx] << 8) | (raw[idx + 1] & 0xFF));
+                                    short right = (short) ((raw[idx + 2] << 8) | (raw[idx + 3] & 0xFF));
+                                    int mixed = (left + right) / 2;
+                                    if (mixed > 32767) mixed = 32767;
+                                    else if (mixed < -32768) mixed = -32768;
+                                    pcm[i] = (short) mixed;
+                                }
+                                while (active.get() && !audioQueue.offer(pcm, 40, TimeUnit.MILLISECONDS)) {
+                                    // Queue full, wait
+                                }
+                            } else {
+                                if (!active.get()) break;
+                                Thread.sleep(10);
+                            }
+                        }
+                    } catch (InterruptedException ignored) {
+                    } catch (Exception e) {
+                        System.err.println("[CustomJukebox] Feeder error: " + e.getMessage());
+                    }
+                }, "Jukebox-Feeder-" + pos.toShortString());
+                feederThread.setDaemon(true);
+                feederThread.start();
+
+                // Pre-buffer: wait until queue has at least 15 frames (~300ms) or up to 1200ms
+                long waitStart = System.currentTimeMillis();
+                while (active.get() && audioQueue.size() < 15 && (System.currentTimeMillis() - waitStart < 1200)) {
+                    Thread.sleep(20);
+                }
 
                 Supplier<short[]> supplier = new Supplier<>() {
                     @Override
@@ -202,25 +243,14 @@ public class JukeboxMusicManager {
                             if (!active.get()) {
                                 return null;
                             }
-                            buffer.clear();
-                            if (!lavaPlayer.provide(frame, 20, TimeUnit.MILLISECONDS)) {
-                                if (!active.get()) {
-                                    return null;
-                                }
-                                return new short[960];
+                            short[] pcm = audioQueue.poll(20, TimeUnit.MILLISECONDS);
+                            if (pcm != null) {
+                                return pcm;
                             }
-                            byte[] raw = buffer.array();
-                            short[] pcm = new short[960];
-                            for (int i = 0; i < 960; i++) {
-                                int idx = i * 4;
-                                short left = (short) ((raw[idx] << 8) | (raw[idx + 1] & 0xFF));
-                                short right = (short) ((raw[idx + 2] << 8) | (raw[idx + 3] & 0xFF));
-                                int mixed = (left + right) / 2;
-                                if (mixed > 32767) mixed = 32767;
-                                else if (mixed < -32768) mixed = -32768;
-                                pcm[i] = (short) mixed;
+                            if (!active.get()) {
+                                return null;
                             }
-                            return pcm;
+                            return new short[960];
                         } catch (Exception e) {
                             return null;
                         }
@@ -230,7 +260,7 @@ public class JukeboxMusicManager {
                 de.maxhenkel.voicechat.api.audiochannel.AudioPlayer voicePlayer = 
                     api.createAudioPlayer(channel, encoder, supplier);
 
-                JukeboxPlayback playback = new JukeboxPlayback(channel, voicePlayer, lavaPlayer, displayTitle, active);
+                JukeboxPlayback playback = new JukeboxPlayback(channel, voicePlayer, lavaPlayer, displayTitle, active, feederThread, audioQueue);
                 activePlaybacks.put(pos, playback);
 
                 voicePlayer.setOnStopped(() -> {
@@ -243,7 +273,7 @@ public class JukeboxMusicManager {
                 Component msg = Component.literal("§6Now playing: §e" + displayTitle);
                 if (level instanceof net.minecraft.server.level.ServerLevel sl) {
                     for (ServerPlayer sp : sl.players()) {
-                        if (sp.blockPosition().closerThan(pos, 32.0)) {
+                        if (sp.blockPosition().closerThan(pos, 64.0)) {
                             sp.sendSystemMessage(msg, true);
                         }
                     }
