@@ -1,6 +1,8 @@
 package com.customjukebox;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -105,6 +107,81 @@ public class JukeboxCommands {
                     source.sendSuccess(() -> Component.literal("§a[MusicDisc] Stopped all active jukebox playback."), true);
                     return 1;
                 })
+            )
+            .then(Commands.literal("mode")
+                .executes(ctx -> {
+                    CommandSourceStack source = ctx.getSource();
+                    String curr = JukeboxConfig.getMode();
+                    source.sendSuccess(() -> Component.literal("§6[MusicDisc] Current playback mode: §e" + curr.toUpperCase()), false);
+                    source.sendSuccess(() -> Component.literal(" §a- direct §7: Studio Master (crystal-clear direct sound, no tin-can effect, entire base)"), false);
+                    source.sendSuccess(() -> Component.literal(" §a- 3d §7: Positional (OpenAL 3D point source at jukebox)"), false);
+                    source.sendSuccess(() -> Component.literal("§7To change: §e/musicdisc mode <direct|3d>"), false);
+                    return 1;
+                })
+                .then(Commands.literal("direct")
+                    .executes(ctx -> {
+                        JukeboxConfig.setMode("direct");
+                        ctx.getSource().sendSuccess(() -> Component.literal("§a[MusicDisc] Playback mode set to §eDIRECT (Studio Master)§a!"), true);
+                        ctx.getSource().sendSuccess(() -> Component.literal("§7Music plays in crystal-clear studio sound without OpenAL 3D tin-can comb filtering."), false);
+                        return 1;
+                    })
+                )
+                .then(Commands.literal("3d")
+                    .executes(ctx -> {
+                        JukeboxConfig.setMode("3d");
+                        ctx.getSource().sendSuccess(() -> Component.literal("§a[MusicDisc] Playback mode set to §e3D (OpenAL Positional)§a!"), true);
+                        return 1;
+                    })
+                )
+            )
+            .then(Commands.literal("volume")
+                .executes(ctx -> {
+                    CommandSourceStack source = ctx.getSource();
+                    source.sendSuccess(() -> Component.literal("§6[MusicDisc] Master volume: §e" + JukeboxConfig.getVolume() + "%§7 (default: 65% for safe bass headroom)"), false);
+                    source.sendSuccess(() -> Component.literal("§7To change: §e/musicdisc volume <1-100>"), false);
+                    return 1;
+                })
+                .then(Commands.argument("percent", IntegerArgumentType.integer(1, 100))
+                    .executes(ctx -> {
+                        int vol = IntegerArgumentType.getInteger(ctx, "percent");
+                        JukeboxMusicManager.setGlobalVolume(vol);
+                        ctx.getSource().sendSuccess(() -> Component.literal("§a[MusicDisc] Master volume set to §e" + vol + "%§a!"), true);
+                        return 1;
+                    })
+                )
+            )
+            .then(Commands.literal("loop")
+                .executes(ctx -> {
+                    CommandSourceStack source = ctx.getSource();
+                    boolean curr = JukeboxConfig.isLoop();
+                    source.sendSuccess(() -> Component.literal("§6[MusicDisc] Loop enabled: §e" + curr), false);
+                    source.sendSuccess(() -> Component.literal("§7To change: §e/musicdisc loop <true|false>"), false);
+                    return 1;
+                })
+                .then(Commands.argument("enabled", BoolArgumentType.bool())
+                    .executes(ctx -> {
+                        boolean enabled = BoolArgumentType.getBool(ctx, "enabled");
+                        JukeboxConfig.setLoop(enabled);
+                        ctx.getSource().sendSuccess(() -> Component.literal("§a[MusicDisc] Looping set to §e" + enabled + "§a!"), true);
+                        return 1;
+                    })
+                )
+            )
+            .then(Commands.literal("range")
+                .executes(ctx -> {
+                    CommandSourceStack source = ctx.getSource();
+                    source.sendSuccess(() -> Component.literal("§6[MusicDisc] Hearing range: §e" + (int)JukeboxConfig.getRange() + " blocks"), false);
+                    source.sendSuccess(() -> Component.literal("§7To change: §e/musicdisc range <blocks>"), false);
+                    return 1;
+                })
+                .then(Commands.argument("blocks", IntegerArgumentType.integer(8, 256))
+                    .executes(ctx -> {
+                        int blocks = IntegerArgumentType.getInteger(ctx, "blocks");
+                        JukeboxConfig.setRange(blocks);
+                        ctx.getSource().sendSuccess(() -> Component.literal("§a[MusicDisc] Hearing range set to §e" + blocks + " blocks§a!"), true);
+                        return 1;
+                    })
+                )
             )
         );
     }
